@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google" value="notranslate">
+  <title>Blockly Demo:</title>
+  <link rel="stylesheet" href="style.css">
+  <!--<script src="../appengine/storage.js"></script>-->
+  <script src="../blockly_compressed.js"></script> 
+  <script src="../blocks_compressed.js"></script>
+  <script src="../python_compressed.js"></script>
+  <script src="code.js"></script>
+  <script src="Blob.js"></script>
+  <script src="spin.js"></script>
+  <script src="FileSaver.min.js"></script>
+</head>
+<body>
+  <table width="100%" height="100%">
+    <tr>
+      <td>
+        <h1><a href="https://cobit.kr">co:bit</a>&rlm; &gt;
+          <a href="/cobit/index.html">OpenCV Blockly</a>&rlm; &gt;
+          <span id="title">...</span>
+        </h1>
+      </td>
+      <td class="farSide">
+        <select id="languageMenu"></select>
+      </td>
+    </tr>
+    <tr>
+      <td colspan=2>
+        <table width="100%">
+          <tr id="tabRow" height="1em">
+            <td id="tab_blocks" class="tabon">...</td>
+            <td class="tabmin tab_collapse">&nbsp;</td>
+            <td id="tab_python" class="taboff tab_collapse">Python</td>
+            <td class="tabmin tab_collapse">&nbsp;</td>
+            <td id="tab_xml" class="taboff tab_collapse">XML</td>
+            <td class="tabmin">&nbsp;</td>
+            <td id="tab_code" class="taboff">
+              <select id="code_menu"></select>
+            </td>
+            <td class="tabmax">
+              <button type="button" onclick="save_python()">Save Python</button>
+              <button type="button" onclick="save()">Save XML</button>
+              <button id="fakeload">Load XML</button>
+              <input type="file" id="load" style="display: none;"/>
+              <button id="trashButton" class="notext" title="...">
+                <img src='../media/1x1.gif' class="trash icon21">
+              </button>
+              <button id="linkButton" class="notext" title="...">
+                <img src='../media/1x1.gif' class="link icon21">
+              </button>
+              <button id="runButton" class="notext primary" title="...">
+                <img src='../media/1x1.gif' class="run icon21">
+              </button>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td height="99%" colspan=2 id="content_area">
+      </td>
+    </tr>
+  </table>
+  <div id="content_blocks" class="content"></div>
+  <pre id="content_python" class="content prettyprint lang-py"></pre>
+  <textarea id="content_xml" class="content" wrap="off"></textarea>
+
+  <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+    <category name="OpenCV Image" colour=240>
+      <block type="imread"></block>  
+      <block type="imshow"></block>
+      <block type="imwrite"></block>
+      <block type="waitkey"></block>
+      <block type="waitkey_noret"></block>
+      <block type="destroyallwindow"></block>
+      <block type="image_shape"></block>
+    </category>  
+    <category name="OpenCV Video" colour=220>
+      <block type="create_video_capture_camera">
+        <value name="CAPTURE">
+          <block type="variables_get">
+            <field name="VAR">{capVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="create_video_capture_file">
+        <value name="CAPTURE">
+          <block type="variables_get">
+            <field name="VAR">{capVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="read_video_from_capture">
+        <value name="CAPTURE">
+          <block type="variables_get">
+            <field name="VAR">{capVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="video_set">
+        <value name="CAPTURE">
+          <block type="variables_get">
+            <field name="VAR">{capVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="create_video_recoder">
+        <value name="WRITER">
+          <block type="variables_get">
+            <field name="VAR">{writerVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="record_video_image">
+        <value name="WRITER">
+          <block type="variables_get">
+            <field name="VAR">{writerVariable}</field>
+          </block>
+        </value>
+      </block>
+    </category>
+    <!--
+    <category name="KT AI speaker" colour=200>
+      <block type="get_temp"></block>
+      <block type="get_humid"></block>
+      <block type="get_pir"></block>
+      <block type="get_touch"></block>
+      <block type="get_mise"></block>
+      <block type="set_mise"></block>
+      <block type="mise_alarm"></block>
+      <block type="run_motor"></block>
+      <block type="run_servo"></block>
+      <block type="get_limit"></block>
+      <block type="get_ultra"></block>
+    </category>
+  -->
+    <category name="OpenCV Figure" colour=200>
+      <block type="draw_line"></block>
+      <block type="draw_rect"></block>
+      <block type="draw_circle"></block>
+      <block type="put_text"></block>
+      <block type="start"></block>
+      <block type="end"></block>
+      <block type="center"></block>
+      <block type="origin"></block>
+      <block type="make_empty_image"></block>
+    </category>
+    <category name="OpenCV Basic Operation" colour=180>
+      <block type="get_pixel_info"></block>   
+      <block type="change_pixel_value"></block>
+      <block type="get_image_size"></block> 
+      <block type="get_roi_image"></block> 
+      <block type="start_roi"></block> 
+      <block type="end_roi"></block> 
+      <block type="rgb_value"></block> 
+      <block type="copy_roi_image"></block> 
+    </category>
+    <category name="OpenCV Image Operation" colour=160>
+      <block type="add_image"></block>
+      <block type="bitwise_not"></block>
+      <block type="bitwise_and"></block>
+      <block type="bitwise_or"></block>
+    </category>
+    <category name="OpenCV Image Processing" colour=140>
+      <block type="cvt_color"></block>
+      <block type="in_range"></block>
+      <block type="hsv_color_upper_limit"></block>
+      <block type="hsv_color_lower_limit"></block>
+      <block type="get_hue_value"></block>
+    </category>
+    <category name="OpenCV Image Threshold" colour=120>
+      <block type="threshold"></block>
+    </category>
+    <category name="OpenCV Image Transformation" colour=100>
+      <block type="flip_image"></block>
+      <block type="resize_image"></block>
+      <block type="move_image"></block>
+      <block type="rotate_image"></block>
+    </category>
+    <category name="OpenCV Image Morphing" colour=340>
+      <block type="dilation"></block>
+      <block type="erode"></block>
+      <block type="erode_dilation"></block>
+    </category>
+    <category name="OpenCV Edge Detect" colour=320>
+      <block type="canny_edge_detect"></block>
+    </category>
+    <category name="OpenCV Image Contour" colour=40>
+      <block type="find_contour"></block>
+      <block type="draw_contour"></block>
+    </category>
+    <category name="OpenCV Contour Feature" colour=20>
+      <block type="get_contour_center"></block>
+      <block type="get_contour_area"></block>
+      <block type="get_contour_perimeter"></block>
+      <block type="get_contour_approx"></block>
+      <block type="get_convexhull_curve"></block>
+      <block type="draw_bounding_rect"></block>
+      <block type="draw_min_area_rect"></block>
+      <block type="draw_min_enclose_circle"></block>
+      <block type="draw_fitting_ellipse"></block>
+      <block type="get_extream_points"></block>
+    </category>
+    <category name="Car Motor control" colour=200>
+      <block type="setup_servo">
+        <value name="SERVO">
+          <block type="variables_get">
+            <field name="VAR">{servoVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="move_servo">
+        <value name="SERVO">
+          <block type="variables_get">
+            <field name="VAR">{servoVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="setup_motor">
+        <value name="MOTOR">
+          <block type="variables_get">
+            <field name="VAR">{motorVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="start_motor">
+        <value name="MOTOR">
+          <block type="variables_get">
+            <field name="VAR">{motorVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="stop_motor">
+        <value name="MOTOR">
+          <block type="variables_get">
+            <field name="VAR">{motorVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="start_all_motor">
+        <value name="MOTOR">
+          <block type="variables_get">
+            <field name="VAR">{motorVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="stop_all_motor">
+        <value name="MOTOR">
+          <block type="variables_get">
+            <field name="VAR">{motorVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="wait_seconds"></block>
+    </category>
+    <category name="Self Driving" colour=200>
+      <block type="get_cv_detector">
+        <value name="DETECTOR">
+          <block type="variables_get">
+            <field name="VAR">{cvdetectVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="get_ml_detector">
+        <value name="DETECTOR">
+          <block type="variables_get">
+            <field name="VAR">{mldetectVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="get_lane">
+        <value name="DETECTOR">
+          <block type="variables_get">
+            <field name="VAR">{cvdetectVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="get_angle">
+        <value name="DETECTOR">
+          <block type="variables_get">
+            <field name="VAR">{cvdetectVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="save_angle_image"></block>
+      <block type="follow_lane">
+        <value name="DETECTOR">
+          <block type="variables_get">
+            <field name="VAR">{mldetectVariable}</field>
+          </block>
+        </value>
+      </block>
+      
+    </category>
+    <category name="%{BKY_CATLOGIC}" colour="%{BKY_LOGIC_HUE}">
+      <block type="controls_if"></block>
+      <block type="logic_compare"></block>
+      <block type="logic_operation"></block>
+      <block type="logic_negate"></block>
+      <block type="logic_boolean"></block>
+      <block type="logic_null"></block>
+      <block type="logic_ternary"></block>
+    </category>
+    <category name="%{BKY_CATLOOPS}" colour="%{BKY_LOOPS_HUE}">
+      <block type="controls_repeat_ext">
+        <value name="TIMES">
+          <shadow type="math_number">
+            <field name="NUM">10</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="controls_whileUntil"></block>
+      <block type="controls_for">
+        <value name="FROM">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="TO">
+          <shadow type="math_number">
+            <field name="NUM">10</field>
+          </shadow>
+        </value>
+        <value name="BY">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="controls_forEach"></block>
+      <block type="controls_flow_statements"></block>
+    </category>
+    <category name="%{BKY_CATMATH}" colour="%{BKY_MATH_HUE}">
+      <block type="math_number">
+        <field name="NUM">123</field>
+      </block>
+      <block type="math_arithmetic">
+        <value name="A">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="B">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_single">
+        <value name="NUM">
+          <shadow type="math_number">
+            <field name="NUM">9</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_trig">
+        <value name="NUM">
+          <shadow type="math_number">
+            <field name="NUM">45</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_constant"></block>
+      <block type="math_number_property">
+        <value name="NUMBER_TO_CHECK">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_round">
+        <value name="NUM">
+          <shadow type="math_number">
+            <field name="NUM">3.1</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_on_list"></block>
+      <block type="math_modulo">
+        <value name="DIVIDEND">
+          <shadow type="math_number">
+            <field name="NUM">64</field>
+          </shadow>
+        </value>
+        <value name="DIVISOR">
+          <shadow type="math_number">
+            <field name="NUM">10</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_constrain">
+        <value name="VALUE">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+        <value name="LOW">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="HIGH">
+          <shadow type="math_number">
+            <field name="NUM">100</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_random_int">
+        <value name="FROM">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="TO">
+          <shadow type="math_number">
+            <field name="NUM">100</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_random_float"></block>
+      <block type="math_atan2">
+        <value name="X">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="Y">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+    </category>
+    <category name="%{BKY_CATTEXT}" colour="%{BKY_TEXTS_HUE}">
+      <block type="text"></block>
+      <block type="text_join"></block>
+      <block type="text_append">
+        <value name="TEXT">
+          <shadow type="text"></shadow>
+        </value>
+      </block>
+      <block type="text_length">
+        <value name="VALUE">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_isEmpty">
+        <value name="VALUE">
+          <shadow type="text">
+            <field name="TEXT"></field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_indexOf">
+        <value name="VALUE">
+          <block type="variables_get">
+            <field name="VAR">{textVariable}</field>
+          </block>
+        </value>
+        <value name="FIND">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_charAt">
+        <value name="VALUE">
+          <block type="variables_get">
+            <field name="VAR">{textVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="text_getSubstring">
+        <value name="STRING">
+          <block type="variables_get">
+            <field name="VAR">{textVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="text_changeCase">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_trim">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_print">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_prompt_ext">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+    </category>
+    <category name="%{BKY_CATLISTS}" colour="%{BKY_LISTS_HUE}">
+      <block type="lists_create_with">
+        <mutation items="0"></mutation>
+      </block>
+      <block type="lists_create_with"></block>
+      <block type="lists_repeat">
+        <value name="NUM">
+          <shadow type="math_number">
+            <field name="NUM">5</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="lists_length"></block>
+      <block type="lists_isEmpty"></block>
+      <block type="lists_indexOf">
+        <value name="VALUE">
+          <block type="variables_get">
+            <field name="VAR">{listVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="lists_getIndex">
+        <value name="VALUE">
+          <block type="variables_get">
+            <field name="VAR">{listVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="lists_setIndex">
+        <value name="LIST">
+          <block type="variables_get">
+            <field name="VAR">{listVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="lists_getSublist">
+        <value name="LIST">
+          <block type="variables_get">
+            <field name="VAR">{listVariable}</field>
+          </block>
+        </value>
+      </block>
+      <block type="lists_split">
+        <value name="DELIM">
+          <shadow type="text">
+            <field name="TEXT">,</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="lists_sort"></block>
+    </category>
+    <category name="%{BKY_CATCOLOUR}" colour="%{BKY_COLOUR_HUE}">
+      <block type="colour_picker"></block>
+      <block type="colour_random"></block>
+      <block type="colour_rgb">
+        <value name="RED">
+          <shadow type="math_number">
+            <field name="NUM">100</field>
+          </shadow>
+        </value>
+        <value name="GREEN">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+        <value name="BLUE">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="colour_blend">
+        <value name="COLOUR1">
+          <shadow type="colour_picker">
+            <field name="COLOUR">#ff0000</field>
+          </shadow>
+        </value>
+        <value name="COLOUR2">
+          <shadow type="colour_picker">
+            <field name="COLOUR">#3333ff</field>
+          </shadow>
+        </value>
+        <value name="RATIO">
+          <shadow type="math_number">
+            <field name="NUM">0.5</field>
+          </shadow>
+        </value>
+      </block>
+    </category>
+    <sep></sep>
+    <category name="%{BKY_CATVARIABLES}" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
+    <category name="%{BKY_CATFUNCTIONS}" colour="%{BKY_PROCEDURES_HUE}" custom="PROCEDURE"></category>
+  </xml>
+
+</body>
+</html>
